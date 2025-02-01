@@ -1,4 +1,5 @@
-
+import 'package:agendamento/controller/firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:agendamento/views/agendar.dart';
 import 'package:agendamento/views/consultas.dart';
 import 'package:agendamento/views/hometab.dart';
@@ -13,7 +14,8 @@ class Hospitais extends StatefulWidget {
 }
 
 class _HospitaisState extends State<Hospitais> {
-  final List<String> _hospitais = <String>['Hospital 1'];
+  final FirestoreService firestoreService = FirestoreService();
+  final TextEditingController textController = TextEditingController();
 
   void _navigateToScreen(Widget telas) {
     Navigator.pushReplacement(
@@ -22,122 +24,108 @@ class _HospitaisState extends State<Hospitais> {
     );
   }
 
-  void _adicionarItem(){
-    setState(() {
-    _hospitais.add('Médico ${_hospitais.length + 1}');
-    });
-
-  }
-
-  void _removerItem (int index){
-    setState(() {
-      _hospitais.removeAt(index);
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Hospital excluido com sucesso'),
-    duration: Durations.short1,
-    ),
-    );
-
-  }
-
-  Widget listView(){
-    return ListView(
-    padding: const EdgeInsets.all(8),
-    children: [
-      Card(
-        color: Colors.amber[100],
-        child: ListTile(
-          leading: Icon(
-            Icons.account_circle,
-            size: 32,
-            color: Colors.lightBlueAccent,
-          ),
-          title: const Text('Hospital 1'),
+  void abrirCaixaTF({String? docID}) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        content: TextField(
+          controller: textController,
         ),
-      ),
-        Card(
-        color: Colors.amber[100],
-        child: ListTile(
-          leading: Icon(
-            Icons.account_circle,
-            size: 32,
-            color: Colors.lightBlueAccent,
-          ),
-          title: const Text('Hospital 2'),
-        ),
-      ),
-      Card(
-        color: Colors.amber[100],
-        child: ListTile(
-          leading: Icon(
-            Icons.account_circle,
-            size: 32,
-            color: Colors.lightBlueAccent,
-          ),
-       title: const Text('Hospital 3'),
-        ),
-      ),
-      Card(
-        color: Colors.amber[100],
-        child: ListTile(
-          leading: Icon(
-            Icons.account_circle,
-            size: 32,
-            color: Colors.lightBlueAccent,
-          ),
-          title: const Text('Hospital 4'),
-        ),
-      ),
-    ],
-  );
-}
-Widget listViewBuilder(){
-  return ListView.builder(
-    padding: const EdgeInsets.all(8),
-    itemCount: _hospitais.length,
-    itemBuilder: (context, index) {
-      return Card(
-        color: Colors.white,
-        child: ListTile(
-          leading: Icon(
-            Icons.account_circle,
-            size: 32,
-            color: Colors.black,
-          ),
-          trailing: IconButton(
-            onPressed:(){ _removerItem(index);
+        actions: [
+          // Botão salvar
+          ElevatedButton(
+            onPressed: () {
+              // Adicionar hospital
+              if (docID == null) {
+                firestoreService.addHospital(textController.text);
+              } else {
+                firestoreService.updateHospital(docID, textController.text);
+              }
+
+              // Limpar o campo de texto
+              textController.clear();
+
+              // Fechar a caixa de texto
+              Navigator.pop(context);
             },
-            icon: const Icon(Icons.delete,
-             color: Colors.red,
-             ),
-            ) ,
-          title:Text(_hospitais[index]),
-        ),
-      );
-    },
-  );
-  
-}
+            child: Text(docID == null ? "Adicionar" : "Atualizar"),
+          ),
+        ],
+      ),
+    );
+  }
 
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
-     backgroundColor: Colors.blue[400],
-      appBar: AppBar(
       backgroundColor: Colors.blue[400],
-        title:  const Text('Lista de Hospitais'),
+      appBar: AppBar(
+        backgroundColor: Colors.blue[400],
+        title: const Text('Lista de Hospitais'),
       ),
-      body: SafeArea(
-        child: listViewBuilder()
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: _adicionarItem, 
-          backgroundColor: Colors.white,
-          child: const Icon(Icons.add),
-          ),
-          bottomNavigationBar: BottomNavigationBar(
+      body: StreamBuilder<QuerySnapshot>(
+        stream: firestoreService.getHospitalStream(),
+        builder: (context, snapshot) {
+          // Se há dados, exibe a lista de hospitais
+          if (snapshot.hasData) {
+            List listaHospitais = snapshot.data!.docs;
+
+            return ListView.builder(
+              itemCount: listaHospitais.length,
+              itemBuilder: (context, index) {
+                // Pega o documento individual
+                DocumentSnapshot document = listaHospitais[index];
+                String docID = document.id;
+
+                // Pega os dados do hospital
+                Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+                String hospitalNome = data['Nome'];
+
+                return Card(
+                  color: Colors.white,
+                  child: ListTile(
+                    leading: Icon(
+                      Icons.account_circle,
+                      size: 32,
+                      color: Colors.lightBlueAccent,
+                    ),
+                    title: Text(hospitalNome),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Botão para atualizar
+                        IconButton(
+                          onPressed: () => abrirCaixaTF(docID: docID),
+                          icon: const Icon(
+                            Icons.update,
+                            color: Colors.amber,
+                          ),
+                        ),
+                        // Botão para excluir
+                        IconButton(
+                          onPressed: () => firestoreService.deleteHospital(docID),
+                          icon: const Icon(
+                            Icons.delete,
+                            color: Colors.red,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          } else {
+            // Se não houver dados, exibe uma mensagem
+            return const Center(child: Text("Nenhum hospital cadastrado..."));
+          }
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: abrirCaixaTF,
+        backgroundColor: Colors.white,
+        child: const Icon(Icons.add),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
         onTap: (index) {
           // Navegação por índice do BottomNavigationBar
           switch (index) {
@@ -160,7 +148,6 @@ Widget listViewBuilder(){
         },
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.white,
-
         unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(
