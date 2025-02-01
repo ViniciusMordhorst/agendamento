@@ -2,6 +2,8 @@
 import 'dart:developer';
 
 
+import 'package:agendamento/controller/agendamentoDBController.dart';
+import 'package:agendamento/model/agendamento.dart';
 import 'package:agendamento/views/Consultas.dart';
 import 'package:agendamento/views/hometab.dart';
 import 'package:agendamento/views/hospitais.dart';
@@ -55,11 +57,29 @@ class _AgendarState extends State<Agendar> {
   String? _retorno;
 
 void _enviarDados() {
-  log("Sua consulta foi agendada para:\nData: $_dia\n Hora: $_hora:$_minuto \n Tipo de Consulta: $_tipoConsulta");
-}
-  Future<void> _salvar() async {
-   
+  if (_formKey.currentState?.validate() ?? false) {
+    // Crie o objeto Agendamento com os dados do formulário
+    final agendamento = Agendamento(
+      nome: _nomeController.text,
+      telefone: _telefoneController.text,
+      data: _calendarioController.text, // A data será preenchida automaticamente com o texto selecionado
+      hora: '$_hora:$_minuto', // Combina a hora e o minuto
+      tipo: _tipoConsulta ?? '', // Tipo de consulta
+    );
+
+    final agendamentodb = AgendamentoDBController();
+    
+    // Salva o agendamento no Firestore
+    agendamentodb.adicionarAgendamento(agendamento).then((_) {
+      log("Agendamento salvo com sucesso!");
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Consulta agendada com sucesso!")));
+      _formKey.currentState?.reset(); // Limpa o formulário
+    }).catchError((error) {
+      log("Erro ao salvar agendamento: $error");
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Erro ao agendar consulta")));
+    });
   }
+}
 
   Future<void> _Calendario(BuildContext context) async{
     final DateTime? data = await showDatePicker(
@@ -227,7 +247,7 @@ return Scaffold(
         const SizedBox(width: 10),
         DropdownButton<String>(
           value: _minuto,
-          
+           
           dropdownColor: Colors.blue[50],
           iconEnabledColor: Colors.amber,
           menuMaxHeight: 100,
@@ -252,6 +272,7 @@ return Scaffold(
 const SizedBox(height: 40),
    // Espaçamento entre os DropdownButtons
     Text('Selecione o tipo de consulta'),
+
     DropdownButton<String>(
     
       value: _tipoConsulta,
@@ -273,6 +294,7 @@ const SizedBox(height: 40),
         });
       },
     ),
+   
 
                 const SizedBox(
                 height: 20.0,

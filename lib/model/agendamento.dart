@@ -8,7 +8,6 @@ class Agendamento {
   String? hora;
   String? tipo;
 
-
   // Construtor
   Agendamento({
     this.id,
@@ -17,19 +16,17 @@ class Agendamento {
     this.data,
     this.hora,
     this.tipo,
-
   });
 
   // Método para enviar dados para o Firebase
   Map<String, dynamic> toFirebase() {
     return {
-      'id': id,
+      'id': id, // O ID pode ser gerado pelo Firestore ou você pode atribuir manualmente se necessário
       'nome': nome,
       'telefone': telefone,
       'data': data,
       'hora': hora,
       'tipo': tipo,
-   
     };
   }
 
@@ -41,7 +38,6 @@ class Agendamento {
     data = json['data'];
     hora = json['hora'];
     tipo = json['tipo'];
- 
   }
 
   // Factory para criar um Agendamento a partir de um DocumentSnapshot do Firebase
