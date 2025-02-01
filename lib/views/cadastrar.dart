@@ -1,7 +1,7 @@
 import 'dart:developer';
 
 
-import 'package:agendamento/controller/UserDBController.dart';
+import 'package:agendamento/controller/userDBController.dart';
 import 'package:agendamento/model/user.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';

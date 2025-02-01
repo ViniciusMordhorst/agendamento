@@ -253,7 +253,9 @@ const SizedBox(height: 40),
    // Espaçamento entre os DropdownButtons
     Text('Selecione o tipo de consulta'),
     DropdownButton<String>(
+    
       value: _tipoConsulta,
+      
       hint: const Text('Selecione'),
       dropdownColor: Colors.blue[50],
           iconEnabledColor: Colors.amber,

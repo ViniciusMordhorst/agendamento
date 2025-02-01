@@ -18,7 +18,7 @@ class UserDBcontroller {
 
     }
 
-    Future<User> getContato(String doc) async {
+    Future<User> getUsuario(String doc) async {
       final DocumentSnapshot result = await collection.doc(doc).get();
       return User.fromFirebase(result);
 

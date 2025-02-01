@@ -1,29 +1,52 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Agendamento {
   int? id;
   String? nome;
+  String? telefone;
   String? data;
-  String? doutor;
+  String? hora;
+  String? tipo;
 
-  Agendamento(this.nome, this.data, this.doutor);
 
-  Map toMap(){
-    Map<String, Object?> map = {
+  // Construtor
+  Agendamento({
+    this.id,
+    this.nome,
+    this.telefone,
+    this.data,
+    this.hora,
+    this.tipo,
+
+  });
+
+  // Método para enviar dados para o Firebase
+  Map<String, dynamic> toFirebase() {
+    return {
+      'id': id,
       'nome': nome,
+      'telefone': telefone,
       'data': data,
-      'doutor': doutor,
+      'hora': hora,
+      'tipo': tipo,
+   
     };
-
-    if (id != null) {
-      map['id'] = id;
-    }
-
-    return map;
   }
 
-  Agendamento.fromMap(Map map) {
-    id = map['id'];
-    data = map['data'];
-    doutor = map['doutor'];
+  // Construtor para criar um Agendamento a partir de dados do Firebase
+  Agendamento.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    nome = json['nome'];
+    telefone = json['telefone'];
+    data = json['data'];
+    hora = json['hora'];
+    tipo = json['tipo'];
+ 
   }
 
+  // Factory para criar um Agendamento a partir de um DocumentSnapshot do Firebase
+  factory Agendamento.fromFirebase(DocumentSnapshot doc) {
+    final dados = doc.data()! as Map<String, dynamic>;
+    return Agendamento.fromJson(dados);
+  }
 }

@@ -1,4 +1,4 @@
-import 'package:agendamento/controller/UserDBController.dart';
+import 'package:agendamento/controller/userDBController.dart';
 import 'package:agendamento/controller/loginController.dart';
 import 'package:agendamento/views/home.dart';
 import 'package:flutter/material.dart';
