@@ -1,27 +1,32 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Medico {
   int? id;
   String? nome;
   String? especialidade;
 
-  Medico(this.nome, this.especialidade);
+  Medico(this.id, this.nome, this.especialidade);
 
-  Map toMap(){
-    Map<String, Object?> map = {
+   Map<String, dynamic> toFirebase(){
+    return {
+      'id': id,
       'nome': nome,
       'especialidade': especialidade
+
     };
 
-    if (id != null) {
-      map['id'] = id;
-    }
+   }
 
-    return map;
+  Medico.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    nome = json['nome'];
+    especialidade = json['especialidade'];
   }
 
-  Medico.fromMap(Map map) {
-    id = map['id'];
-    nome = map['nome'];
-    especialidade = map['especialidade'];
+  factory Medico.fromFirebase(DocumentSnapshot doc) {
+    final dados = doc.data()! as Map<String, dynamic>;
+    return Medico.fromJson(dados);
+
   }
 
 }

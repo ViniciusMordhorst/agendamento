@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 
+import 'package:agendamento/controller/UserDBController.dart';
 import 'package:agendamento/model/user.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -16,37 +17,58 @@ class Cadastrar extends StatefulWidget {
 class _CadastrarState extends State<Cadastrar> {
   final TextEditingController _nomeController = TextEditingController();
   final TextEditingController _cpfController = TextEditingController();
-  final TextEditingController _nascimentoController = TextEditingController();
+  final TextEditingController _dataNascimentoController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _enderecoController = TextEditingController();
   final TextEditingController _senhaController = TextEditingController();
-
+ 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-/* final _db = DBController();*/
-User? _user;
+ final UserDBcontroller userdbcontroller = UserDBcontroller();
+User? usuario;
 
-  void _salvarForm() async{
+void _salvarForm() async {
   final bool isValid = _formKey.currentState?.validate() ?? false;
   final navigator = Navigator.of(context);
 
- if(isValid){
-    if (_user == null) {
-       /*  await _db.salvarUsuario(
-        User(_nomeController.text,
-         _cpfController.text,
-          _emailController.text,
-          _enderecoController.text,
-            _senhaController.text),
+  if (isValid) {
+    try {
+      // Convertendo a string da data para DateTime antes de salvar
+      DateTime? dataNascimento;
+      if (_dataNascimentoController.text.isNotEmpty) {
+        dataNascimento = DateFormat("dd/MM/yyyy").parse(_dataNascimentoController.text);
+      }
 
-      );*/
+      // Criando uma instância do usuário
+    User novoUsuario = User(
+      _nomeController.text,
+      _cpfController.text,
+      _emailController.text,
+      _senhaController.text, // Corrigido: senha antes de dataNascimento
+      dataNascimento, // Corrigido: passando DateTime, não String
+      _enderecoController.text,
+);
 
-    } else {
-      
+
+      // Salvando no banco de dados
+      await userdbcontroller.adicionarUsuario(novoUsuario);
+
+      // Exibir mensagem de sucesso
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Usuário cadastrado com sucesso!"))
+      );
+
+      // Fechar a tela de cadastro
+      navigator.pop();
+    } catch (e) {
+      // Exibir mensagem de erro em caso de falha
+      print("Erro ao salvar usuário: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Erro ao cadastrar usuário. Tente novamente."))
+      );
     }
-    navigator.pop();
   }
-  }
+}
 
   @override
   void dispose() {
@@ -67,7 +89,7 @@ User? _user;
      ); //Caixa de alerta que abre o calendario(datepicker)
      if (data!= null) {
       setState(() {
-          _nascimentoController.text = DateFormat("dd/MM/yyyy").format(data).toString();
+          _dataNascimentoController.text = DateFormat("dd/MM/yyyy").format(data).toString();
 
       });
        
@@ -140,7 +162,7 @@ User? _user;
                     ),  
 
                     TextFormField(
-              controller: _nascimentoController,
+              controller: _dataNascimentoController,
               keyboardType: TextInputType.datetime,
               decoration: InputDecoration(
                labelText: 'Data de Nascimento',
@@ -242,6 +264,7 @@ User? _user;
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.lightBlue,
                       foregroundColor: Colors.white70,
+                      
                      
                     ),
                      child: const Text ("Enviar"),

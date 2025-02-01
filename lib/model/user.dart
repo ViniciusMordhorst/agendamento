@@ -4,10 +4,10 @@ class User {
   int? id;
   String? nome;
   String? cpf;
-  String? email;
-  String? senha;
   DateTime? dataNascimento;
+  String? email;
   String? endereco;
+  String? senha;
   String? foto;
 
   User(this.nome, this.cpf, this.email, this.senha,this.dataNascimento, this.endereco);
