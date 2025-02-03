@@ -1,32 +1,30 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Medico {
-  int? id;
   String? nome;
   String? especialidade;
 
-  Medico(this.id, this.nome, this.especialidade);
+  // Construtor da classe Medico
+  Medico(this.nome, this.especialidade);
 
-   Map<String, dynamic> toFirebase(){
+  // Converte o objeto Medico para um formato que o Firestore entende
+  Map<String, dynamic> toFirebase() {
     return {
-      'id': id,
       'nome': nome,
-      'especialidade': especialidade
-
+      'especialidade': especialidade,
+      'timestamp': Timestamp.now(), // Adiciona a data/hora de criação
     };
+  }
 
-   }
-
+  // Construtor a partir de um mapa de dados (JSON)
   Medico.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
     nome = json['nome'];
     especialidade = json['especialidade'];
   }
 
+  // Constrói um objeto Medico a partir de um DocumentSnapshot
   factory Medico.fromFirebase(DocumentSnapshot doc) {
     final dados = doc.data()! as Map<String, dynamic>;
     return Medico.fromJson(dados);
-
   }
-
 }

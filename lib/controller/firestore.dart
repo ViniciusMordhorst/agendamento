@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import 'package:agendamento/model/medico.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 
@@ -9,15 +9,8 @@ class FirestoreService {
 final CollectionReference medicos = 
 FirebaseFirestore.instance.collection('Medicos');
 
-// Adiciona um novo médico ao banco de dados
-Future<void> addMedico(String medico) {
-
-  return medicos.add({
-    'Nome': medico,
-    'timestamp': Timestamp.now(),
-
-  });
-
+Future<void> addMedico(Medico medico) {
+  return medicos.add(medico.toFirebase());
 }
 
 //Pega as informações do banco 
@@ -30,13 +23,14 @@ Stream<QuerySnapshot> getMedicoStream() {
 }
 
 // Atualiza informação
-Future<void> updateMedico(String docID, String novoMedico){
+Future<void> updateMedico(String docID, String novoNome, String novaEspecialidade) {
   return medicos.doc(docID).update({
-  'Nome': novoMedico,
-  'timestamp': Timestamp.now(),
+    'nome': novoNome,
+    'especialidade': novaEspecialidade,
+    'timestamp': Timestamp.now(),
   });
-
 }
+
 
 // Deleta Informação
 Future<void> deleteMedico(String docID) {

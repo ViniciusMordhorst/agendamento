@@ -3,6 +3,7 @@ import 'package:agendamento/views/consultas.dart';
 import 'package:agendamento/views/Hospitais.dart';
 import 'package:agendamento/views/Medicos.dart';
 import 'package:agendamento/views/hometab.dart';
+import 'package:agendamento/views/notificacoestela.dart';
 import 'package:flutter/material.dart';
 
 
@@ -161,10 +162,10 @@ class _HomeState extends State<Home> {
 
  floatingActionButton: FloatingActionButton(
         onPressed: () {
-          _navigateToScreen(const Hometab()); 
+          _navigateToScreen(const NotificacoesTela()); 
         },
-        backgroundColor: Colors.blue[600],
-        child: const Icon(Icons.person),
+        backgroundColor: Colors.white,
+        child: const Icon(Icons.notifications),
       ),
 
       bottomNavigationBar: BottomNavigationBar(

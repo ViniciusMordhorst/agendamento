@@ -1,4 +1,5 @@
 import 'package:agendamento/firebase_options.dart';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:agendamento/views/telaLogin.dart';

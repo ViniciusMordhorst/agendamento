@@ -5,6 +5,7 @@ import 'package:agendamento/views/hometab.dart';
 import 'package:agendamento/views/hospitais.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:agendamento/model/medico.dart'; // Importando o modelo Medico
 
 class Medicos extends StatefulWidget {
   const Medicos({super.key});
@@ -15,7 +16,8 @@ class Medicos extends StatefulWidget {
 
 class _MedicosState extends State<Medicos> {
   final FirestoreService firestoreService = FirestoreService();
-  final TextEditingController textController = TextEditingController();
+  final TextEditingController nomeController = TextEditingController();
+  final TextEditingController especialidadeController = TextEditingController();
 
   void _navigateToScreen(Widget telas) {
     Navigator.pushReplacement(
@@ -24,36 +26,59 @@ class _MedicosState extends State<Medicos> {
     );
   }
 
-  void abrirCaixaTF({String? docID}) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        content: TextField(
-          controller: textController,
-        ),
-        actions: [
-          // Botão para salvar
-          ElevatedButton(
-            onPressed: () {
-              // Adicionar ou atualizar médico
-              if (docID == null) {
-                firestoreService.addMedico(textController.text);
-              } else {
-                firestoreService.updateMedico(docID, textController.text);
-              }
+  void abrirCaixaTF({String? docID, String? nomeInicial, String? especialidadeInicial}) {
+  nomeController.text = nomeInicial ?? "";
+  especialidadeController.text = especialidadeInicial ?? "";
 
-              // Limpar campo de texto
-              textController.clear();
-
-              // Fechar caixa de diálogo
-              Navigator.pop(context);
-            },
-            child: Text(docID == null ? "Adicionar" : "Atualizar"),
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text(docID == null ? "Adicionar Médico" : "Atualizar Médico"),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: nomeController,
+            decoration: const InputDecoration(labelText: "Nome do Médico"),
+          ),
+          TextField(
+            controller: especialidadeController,
+            decoration: const InputDecoration(labelText: "Especialidade"),
           ),
         ],
       ),
-    );
-  }
+      actions: [
+        ElevatedButton(
+          onPressed: () {
+            String nome = nomeController.text.trim();
+            String especialidade = especialidadeController.text.trim();
+
+            // Verifique se os valores não são nulos ou vazios
+            if (nome.isEmpty || especialidade.isEmpty) {
+              // Exibe um alerta ou impede a ação de adicionar/atualizar
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Por favor, preencha todos os campos!')),
+              );
+            } else {
+              // Cria o objeto Medico
+              Medico medico = Medico(nome, especialidade);
+
+              if (docID == null) {
+                firestoreService.addMedico(medico);
+              } else {
+                firestoreService.updateMedico(docID, nome, especialidade);
+              }
+
+              Navigator.pop(context);
+            }
+          },
+          child: Text(docID == null ? "Adicionar" : "Atualizar"),
+        ),
+      ],
+    ),
+  );
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -66,49 +91,33 @@ class _MedicosState extends State<Medicos> {
       body: StreamBuilder<QuerySnapshot>(
         stream: firestoreService.getMedicoStream(),
         builder: (context, snapshot) {
-          // Se tiver dados, exibe a lista de médicos
           if (snapshot.hasData) {
             List listaMedicos = snapshot.data!.docs;
-
             return ListView.builder(
               itemCount: listaMedicos.length,
               itemBuilder: (context, index) {
-                // Pega o documento individual
                 DocumentSnapshot document = listaMedicos[index];
                 String docID = document.id;
-
-                // Pega os dados do médico
-                Map<String, dynamic> data =
-                    document.data() as Map<String, dynamic>;
-                String medicoNome = data['Nome'];
+                Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+                String medicoNome = data['nome'];
+                String especialidade = data['especialidade'] ?? "Não informado";
 
                 return Card(
                   color: Colors.white,
                   child: ListTile(
-                    leading: Icon(
-                      Icons.account_circle,
-                      size: 32,
-                      color: Colors.lightBlueAccent,
-                    ),
+                    leading: const Icon(Icons.account_circle, size: 32, color: Colors.lightBlueAccent),
                     title: Text(medicoNome),
+                    subtitle: Text("Especialidade: $especialidade"),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Botão de update
                         IconButton(
-                          onPressed: () => abrirCaixaTF(docID: docID),
-                          icon: const Icon(
-                            Icons.update,
-                            color: Colors.amber,
-                          ),
+                          onPressed: () => abrirCaixaTF(docID: docID, nomeInicial: medicoNome, especialidadeInicial: especialidade),
+                          icon: const Icon(Icons.update, color: Colors.amber),
                         ),
-                        // Botão de delete
                         IconButton(
                           onPressed: () => firestoreService.deleteMedico(docID),
-                          icon: const Icon(
-                            Icons.delete,
-                            color: Colors.red,
-                          ),
+                          icon: const Icon(Icons.delete, color: Colors.red),
                         ),
                       ],
                     ),
@@ -117,7 +126,6 @@ class _MedicosState extends State<Medicos> {
               },
             );
           } else {
-            // Se não tiver dados, exibe uma mensagem
             return const Center(child: Text("Nenhum médico cadastrado..."));
           }
         },
@@ -129,7 +137,6 @@ class _MedicosState extends State<Medicos> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         onTap: (index) {
-          // Navegação por índice do BottomNavigationBar
           switch (index) {
             case 0:
               _navigateToScreen(const Hospitais());
