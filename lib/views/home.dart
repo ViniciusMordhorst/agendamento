@@ -1,9 +1,11 @@
+import 'package:agendamento/model/notificacao.dart';
 import 'package:agendamento/views/agendar.dart';
 import 'package:agendamento/views/consultas.dart';
 import 'package:agendamento/views/Hospitais.dart';
 import 'package:agendamento/views/Medicos.dart';
 import 'package:agendamento/views/hometab.dart';
-import 'package:agendamento/views/notificacoestela.dart';
+import 'package:agendamento/views/notificacaotela.dart';
+import 'package:agendamento/model/agendamento.dart';
 import 'package:flutter/material.dart';
 
 
@@ -160,13 +162,7 @@ class _HomeState extends State<Home> {
         ),  
       ),
 
- floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _navigateToScreen(const NotificacoesTela()); 
-        },
-        backgroundColor: Colors.white,
-        child: const Icon(Icons.notifications),
-      ),
+
 
       bottomNavigationBar: BottomNavigationBar(
         onTap: (index) {
@@ -216,6 +212,20 @@ class _HomeState extends State<Home> {
           ),
         ],
       ),
+
+     floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => Notificacaotela(),
+            ),
+          );
+        },
+        child: Icon(Icons.notification_important, color: Colors.white,),
+        backgroundColor: Colors.indigo,
+      ),
     );
+   
   }
 }

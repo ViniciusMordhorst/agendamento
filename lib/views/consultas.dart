@@ -5,6 +5,7 @@ import 'package:agendamento/views/agendar.dart';
 import 'package:agendamento/views/hometab.dart';
 import 'package:agendamento/views/hospitais.dart';
 import 'package:agendamento/views/medicos.dart';
+import 'package:agendamento/controller/agendamentoDBController.dart';
 
 class Consultas extends StatefulWidget {
   const Consultas({super.key});
@@ -14,6 +15,7 @@ class Consultas extends StatefulWidget {
 }
 
 class _ConsultasState extends State<Consultas> {
+  final AgendamentoDBController dbController = AgendamentoDBController();
   final CollectionReference agendamentosCollection =
       FirebaseFirestore.instance.collection("Agendamento");
 
@@ -59,7 +61,7 @@ class _ConsultasState extends State<Consultas> {
                         "Data: ${agendamento.data} • Hora: ${agendamento.hora}"),
                     trailing: IconButton(
                       icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () => _confirmarRemocao(doc.id),
+                      onPressed: () => _confirmarRemocao(doc.id, agendamento.nome ?? "Paciente"),
                     ),
                   ),
                 );
@@ -118,7 +120,7 @@ class _ConsultasState extends State<Consultas> {
     );
   }
 
-  void _confirmarRemocao(String docId) {
+  void _confirmarRemocao(String docId, String nome) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -132,7 +134,7 @@ class _ConsultasState extends State<Consultas> {
             ),
             TextButton(
               onPressed: () {
-                _cancelarAgendamento(docId);
+                _cancelarAgendamento(docId, nome);
                 Navigator.of(context).pop();
               },
               child: const Text("Sim"),
@@ -143,7 +145,7 @@ class _ConsultasState extends State<Consultas> {
     );
   }
 
-  void _cancelarAgendamento(String docId) {
-    agendamentosCollection.doc(docId).delete();
+  void _cancelarAgendamento(String docId, String nome) {
+    dbController.cancelarAgendamento(docId, nome);
   }
 }
