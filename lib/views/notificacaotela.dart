@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:agendamento/controller/notificacaodb.dart';
 
 class Notificacaotela extends StatefulWidget {
   @override
@@ -10,6 +11,14 @@ class _NotificacaotelaState extends State<Notificacaotela> {
   final CollectionReference notificacoesCollection =
       FirebaseFirestore.instance.collection("Notificacoes");
 
+  // Método para excluir todas as notificações
+  void _limparNotificacoes() async {
+    var snapshots = await notificacoesCollection.get();
+    for (var doc in snapshots.docs) {
+      await doc.reference.delete();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -17,51 +26,35 @@ class _NotificacaotelaState extends State<Notificacaotela> {
       appBar: AppBar(
         title: const Text("Notificações"),
         backgroundColor: Colors.blue[400],
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.delete),
+            onPressed: _limparNotificacoes,
+            tooltip: "Limpar notificações",
+          ),
+        ],
       ),
       body: SafeArea(
         child: StreamBuilder(
-          stream: notificacoesCollection
-              .orderBy('timestamp', descending: true)
-              .snapshots(),
+          stream: notificacoesCollection.snapshots(), // Mudamos para a coleção de notificações
           builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             }
 
             if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-              return const Center(
-                  child: Text("Nenhuma notificação disponível."));
+              return const Center(child: Text("Nenhuma notificação disponível."));
             }
 
             return ListView(
               padding: const EdgeInsets.all(16),
               children: snapshot.data!.docs.map((doc) {
-                Map<String, dynamic> notificacao =
-                    doc.data() as Map<String, dynamic>;
+                String nome = doc['Nome'] ?? "Paciente desconhecido";
+                String mensagem = "Consulta de $nome agendada com sucesso.";
+                Timestamp timestamp = doc['timestamp'] ?? Timestamp.now();
 
-                String nome = notificacao['Nome'] ?? "Paciente desconhecido";
-                String mensagemOriginal = notificacao['mensagem'] ?? "Mensagem não encontrada";
-                Timestamp? timestamp = notificacao['timestamp'] as Timestamp?;
-
-                // Convertendo timestamp para uma data legível
-                String dataHora = timestamp != null
-                    ? "${timestamp.toDate().hour}:${timestamp.toDate().minute.toString().padLeft(2, '0')} - ${timestamp.toDate().day}/${timestamp.toDate().month}/${timestamp.toDate().year}"
-                    : "Data não disponível";
-
-                // Variáveis para a mensagem, ícone e cor
-                String mensagem;
-                IconData icone;
-                Color iconeCor;
-
-                if (mensagemOriginal.contains("cancelada")) {
-                  mensagem = "$nome sua consulta foi CANCELADA às $dataHora com sucesso.";
-                  icone = Icons.cancel;
-                  iconeCor = Colors.red;
-                } else {
-                  mensagem = "$nome, sua consulta foi agendada para $dataHora.";
-                  icone = Icons.check_circle;
-                  iconeCor = Colors.green;
-                }
+                // Exibindo timestamp diretamente
+                String horaCancelamento = "${timestamp.toDate()}"; // Mostrando diretamente o valor do Timestamp (em segundos)
 
                 return Card(
                   shape: RoundedRectangleBorder(
@@ -69,11 +62,8 @@ class _NotificacaotelaState extends State<Notificacaotela> {
                   ),
                   margin: const EdgeInsets.symmetric(vertical: 8),
                   child: ListTile(
-                    title: Text(
-                      mensagem,
-                      style: const TextStyle(fontWeight: FontWeight.w500),
-                    ),
-                    leading: Icon(icone, color: iconeCor),
+                    title: Text(mensagem), // Mensagem de agendamento
+                    subtitle: Text("Agendada em: $horaCancelamento"), // Mostrando diretamente o Timestamp
                   ),
                 );
               }).toList(),

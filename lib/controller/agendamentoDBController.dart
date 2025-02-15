@@ -23,19 +23,27 @@ class AgendamentoDBController {
 
   // Cancelar Agendamento e salvar notificação
   Future<void> cancelarAgendamento(String docId, String nome) async {
-    // Obtém a hora exata do cancelamento no formato HH:mm
-    Timestamp agora = Timestamp.now();
-    DateTime dataHora = agora.toDate();
-    String horaCancelamento = "${dataHora.hour}:${dataHora.minute.toString().padLeft(2, '0')}";
+    try {
+      // Obtém a hora exata do cancelamento no formato HH:mm
+      Timestamp agora = Timestamp.now();
+      DateTime dataHora = agora.toDate();
+      Timestamp horaCancelamento = Timestamp.now();
 
-    // Remove a consulta do banco de dados
-    await collection.doc(docId).delete();
+      // Remove o agendamento do banco de dados
+      await collection.doc(docId).delete();
 
-    // Salva a notificação do cancelamento
-    await notificacoesCollection.add({
-      'Nome': nome,
-      'mensagem': "Consulta no nome de $nome, cancelada às $horaCancelamento.",
-      'timestamp': agora,
-    });
+      // Salva a notificação de cancelamento
+      await notificacoesCollection.add({
+        'Nome': nome,
+        'mensagem': "Consulta no nome de $nome, cancelada às $horaCancelamento.",
+        'timestamp': agora,
+      });
+
+      // Se necessário, você pode até retornar um valor ou lançar uma exceção, dependendo da lógica de negócios.
+    } catch (e) {
+      // Tratar qualquer erro
+      print("Erro ao cancelar agendamento: $e");
+      // Aqui você pode lançar uma exceção ou lidar de forma adequada com o erro
+    }
   }
 }
