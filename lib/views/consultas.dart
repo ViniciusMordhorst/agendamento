@@ -19,6 +19,8 @@ class _ConsultasState extends State<Consultas> {
   final CollectionReference agendamentosCollection =
       FirebaseFirestore.instance.collection("Agendamento");
 
+  String userId = 'exemplo_user_id'; // Substitua por seu método de obter o userId
+
   void _navigateToScreen(Widget telas) {
     Navigator.pushReplacement(
       context,
@@ -61,7 +63,7 @@ class _ConsultasState extends State<Consultas> {
                         "Data: ${agendamento.data} • Hora: ${agendamento.hora}"),
                     trailing: IconButton(
                       icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () => _confirmarRemocao(doc.id, agendamento.nome ?? "Paciente"),
+                      onPressed: () => _confirmarRemocao(doc.id, agendamento.nome ?? "Paciente", userId),
                     ),
                   ),
                 );
@@ -120,7 +122,7 @@ class _ConsultasState extends State<Consultas> {
     );
   }
 
-  void _confirmarRemocao(String docId, String nome) {
+  void _confirmarRemocao(String docId, String nome, String userId) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -134,7 +136,7 @@ class _ConsultasState extends State<Consultas> {
             ),
             TextButton(
               onPressed: () {
-                _cancelarAgendamento(docId, nome);
+                _cancelarAgendamento(docId, nome, userId);
                 Navigator.of(context).pop();
               },
               child: const Text("Sim"),
@@ -145,7 +147,7 @@ class _ConsultasState extends State<Consultas> {
     );
   }
 
-  void _cancelarAgendamento(String docId, String nome) {
-    dbController.cancelarAgendamento(docId, nome);
+  void _cancelarAgendamento(String docId, String nome, String userId) {
+    dbController.cancelarAgendamento(docId, nome, userId);
   }
 }

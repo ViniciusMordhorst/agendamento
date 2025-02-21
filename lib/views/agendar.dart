@@ -55,15 +55,17 @@ class _AgendarState extends State<Agendar> {
         );
 
         // Salva a notificação após o agendamento ser concluído
-        NotificacaoDB.salvarNotificacao(
-          _nomeController.text,
-          _calendarioController.text,
-          '$_hora:$_minuto'
-        ).then((_) {
-          log("Notificação salva com sucesso!");
-        }).catchError((error) {
-          log("Erro ao salvar notificação: $error");
-        });
+    final notificacaoDB = NotificacaoDB(); // Instancia a classe NotificacaoDB
+      notificacaoDB.salvarNotificacao(
+      _nomeController.text,
+      _calendarioController.text,
+      '$_hora:$_minuto'
+    ).then((_) {
+      log("Notificação salva com sucesso!");
+    }).catchError((error) {
+  log("Erro ao salvar notificação: $error");
+});
+
 
         _formKey.currentState?.reset();
       }).catchError((error) {

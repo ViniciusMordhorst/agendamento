@@ -47,27 +47,32 @@ class _NotificacaotelaState extends State<Notificacaotela> {
             }
 
             return ListView(
-              padding: const EdgeInsets.all(16),
-              children: snapshot.data!.docs.map((doc) {
-                String nome = doc['Nome'] ?? "Paciente desconhecido";
-                String mensagem = "Consulta de $nome agendada com sucesso.";
-                Timestamp timestamp = doc['timestamp'] ?? Timestamp.now();
+  padding: const EdgeInsets.all(16),
+  children: snapshot.data!.docs.map((doc) {
+    String nome = doc['Nome'] ?? "Paciente desconhecido";
+    String status = doc['status'] ?? "agendada"; // Obtém o status
+    Timestamp timestamp = doc['timestamp'] ?? Timestamp.now();
 
-                // Exibindo timestamp diretamente
-                String horaCancelamento = "${timestamp.toDate()}"; // Mostrando diretamente o valor do Timestamp (em segundos)
+    // Define a mensagem com base no status da notificação
+    String mensagem = status == "cancelada"
+        ? "Consulta de $nome cancelada com sucesso."
+        : "Consulta de $nome agendada com sucesso.";
 
-                return Card(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  margin: const EdgeInsets.symmetric(vertical: 8),
-                  child: ListTile(
-                    title: Text(mensagem), // Mensagem de agendamento
-                    subtitle: Text("Agendada em: $horaCancelamento"), // Mostrando diretamente o Timestamp
-                  ),
-                );
-              }).toList(),
-            );
+    String horaCancelamento = "${timestamp.toDate()}";
+
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: ListTile(
+        title: Text(mensagem),
+        subtitle: Text("Data: $horaCancelamento"),
+      ),
+    );
+  }).toList(),
+);
+
           },
         ),
       ),
