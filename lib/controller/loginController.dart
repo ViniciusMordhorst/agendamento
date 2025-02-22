@@ -14,9 +14,9 @@ class Logincontroller {
           .limit(1) // Garantir que só retornará um documento
           .get();
 
-      // Verificar se encontramos o usuário
+
       if (querySnapshot.docs.isNotEmpty) {
-        // Pegue o primeiro (e único) documento retornado
+     
         DocumentSnapshot userDoc = querySnapshot.docs.first;
         
         // Verificar se a senha fornecida corresponde à senha armazenada no banco
